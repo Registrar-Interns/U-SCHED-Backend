@@ -35,7 +35,7 @@ exports.login = (req, res) => {
     }
 
     // Generate a JWT token (valid for 1 hour)
-    const token = jwt.sign({ id: user.id, username: user.username }, SECRET, {
+    const token = jwt.sign({ id: user.user_id, username: user.username }, SECRET, {
       expiresIn: '1h',
     });
     res.json({ message: 'Login successful.', token });

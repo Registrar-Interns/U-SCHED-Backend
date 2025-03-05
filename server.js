@@ -8,6 +8,7 @@ const cors = require("cors");
 const authRoutes = require('./routes/authRoutes');
 const curriculumRoutes = require('./routes/curriculumRoutes');
 const usersRoutes = require('./routes/usersRoutes');
+const passwordResetRoutes = require('./routes/passwordResetRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -30,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Mount the auth routes on /api
 app.use('/api', authRoutes);
+app.use('/api', passwordResetRoutes);
 
 // Mount the curriculum routes
 app.use('/api/curriculum', curriculumRoutes);
