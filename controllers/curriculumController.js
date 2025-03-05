@@ -125,78 +125,113 @@ function toTitleCase(str) {
 }  
 
 function insertCourses(courses, res) {
-    if (courses.length === 0) {
-      return res.status(400).json({ message: 'No course data found in file.' });
-    }
-    
-    // Assume file is for one department/program; take these from the first course
-    const department = courses[0].department;
-    const program = courses[0].program;
-    
-    // Delete existing courses for this department and program
-    const deleteQuery = `DELETE FROM curriculum_courses WHERE department = ? AND program = ?`;
-    pool.query(deleteQuery, [department, program], (err, deleteResult) => {
+  if (courses.length === 0) {
+    return res.status(400).json({ message: 'No course data found in file.' });
+  }
+  
+  // Use the first course's department/program as provided (which are actually college_code and program_code)
+  const collegeCode = courses[0].department;
+  const programCode = courses[0].program;
+  
+  // Lookup the college_id based on collegeCode
+  pool.query(
+    `SELECT college_id FROM college WHERE college_code = ?`,
+    [collegeCode],
+    (err, collegeResults) => {
       if (err) {
-        console.error("Error deleting previous courses:", err);
-        return res.status(500).json({ message: 'Error deleting previous courses.', error: err.message });
+        console.error("Error retrieving college_id:", err);
+        return res.status(500).json({ message: 'Error retrieving college.', error: err.message });
       }
+      if (collegeResults.length === 0) {
+        return res.status(400).json({ message: 'Invalid college code provided.' });
+      }
+      const college_id = collegeResults[0].college_id;
       
-      // Insert new courses after deletion
-      const query = `
-        INSERT INTO curriculum_courses 
-          (department, program, year, semester, course_code, course_title, lec, lab, total, pre_co_requisite, is_gened)
-        VALUES ?
-      `;
-      const values = courses.map(course => [
-        course.department,
-        course.program,
-        course.year,
-        course.semester,
-        course.course_code,
-        course.course_title,
-        course.lec,
-        course.lab,
-        course.total,
-        course.pre_co_requisite,
-        course.is_gened
-      ]);
-      
-      pool.query(query, [values], (err, results) => {
-        if (err) {
-          console.error("Error inserting data:", err);
-          return res.status(500).json({ message: 'Error inserting data.', error: err.message });
+      // Lookup program_id based on programCode and college_id
+      pool.query(
+        `SELECT program_id FROM program WHERE program_code = ? AND college_id = ?`,
+        [programCode, college_id],
+        (err, programResults) => {
+          if (err) {
+            console.error("Error retrieving program_id:", err);
+            return res.status(500).json({ message: 'Error retrieving program.', error: err.message });
+          }
+          if (programResults.length === 0) {
+            return res.status(400).json({ message: 'Invalid program code provided.' });
+          }
+          const program_id = programResults[0].program_id;
+          
+          // Now delete existing courses using these IDs
+          const deleteQuery = `DELETE FROM curriculum_courses WHERE college_id = ? AND program_id = ?`;
+          pool.query(deleteQuery, [college_id, program_id], (err, deleteResult) => {
+            if (err) {
+              console.error("Error deleting previous courses:", err);
+              return res.status(500).json({ message: 'Error deleting previous courses.', error: err.message });
+            }
+            
+            // Prepare values for insertion – notice we now use college_id and program_id
+            const query = `
+              INSERT INTO curriculum_courses 
+                (college_id, program_id, year, semester, course_code, course_title, lec, lab, total, pre_co_requisite, is_gened)
+              VALUES ?
+            `;
+            const values = courses.map(course => [
+              college_id,
+              program_id,
+              course.year,
+              course.semester,
+              course.course_code,
+              course.course_title,
+              course.lec,
+              course.lab,
+              course.total,
+              course.pre_co_requisite,
+              course.is_gened
+            ]);
+            
+            pool.query(query, [values], (err, results) => {
+              if (err) {
+                console.error("Error inserting data:", err);
+                return res.status(500).json({ message: 'Error inserting data.', error: err.message });
+              }
+              console.log("Data inserted successfully. Inserted rows:", results.affectedRows);
+              res.json({ message: 'File processed and data inserted.', inserted: results.affectedRows });
+            });
+          });
         }
-        console.log("Data inserted successfully. Inserted rows:", results.affectedRows);
-        res.json({ message: 'File processed and data inserted.', inserted: results.affectedRows });
-      });
-    });
-}
-  
-
-// GET /api/curriculum?year=First Year&program=BSCS
-exports.getCurriculum = (req, res) => {
-    const { year, program } = req.query;
-  
-    // Validate both
-    if (!year || !program) {
-      return res.status(400).json({ message: 'Year and Program are required.' });
+      );
     }
+  );
+}
+
+// GET /api/curriculum?year=First Year&program=BSIT
+exports.getCurriculum = (req, res) => {
+  const { year, program } = req.query; // e.g. "First Year", "BSIT"
   
-    const query = `
-      SELECT * 
-      FROM curriculum_courses
-      WHERE year = ? AND program = ?
-      ORDER BY id ASC
-    `;
-    pool.query(query, [year, program], (err, results) => {
-      if (err) {
-        return res
-          .status(500)
-          .json({ message: 'Error retrieving curriculum.', error: err.message });
-      }
-      res.json(results);
-    });
-};  
+  // Validate both
+  if (!year || !program) {
+    return res.status(400).json({ message: 'Year and Program are required.' });
+  }
+
+  // JOIN the program table so we can filter by program_code
+  const query = `
+    SELECT c.*
+    FROM curriculum_courses c
+    JOIN program p ON c.program_id = p.program_id
+    WHERE c.year = ? 
+      AND p.program_code = ?
+    ORDER BY c.id ASC
+  `;
+  pool.query(query, [year, program], (err, results) => {
+    if (err) {
+      return res.status(500).json({
+        message: 'Error retrieving curriculum.',
+        error: err.message,
+      });
+    }
+    res.json(results);
+  });
+};
 
 // GET /api/curriculum?year=First%20Year
 exports.getCurriculumByYear = (req, res) => {
