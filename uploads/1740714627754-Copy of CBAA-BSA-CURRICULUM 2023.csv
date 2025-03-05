@@ -1,0 +1,67 @@
+Batch of Curriculum,Department,Program,Year Level,Semester,Course Code,Course Title,Lec,Lab,GenEd,Pre/Co-Requisite
+2023,CBAA,BSA,1st Year,First Semester,MAT101,Mathematics in the Modern World,3,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,First Semester,PSY100,Understanding the Self,3,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,First Semester,READ100,Science and Development of Reading,3,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,First Semester,ACC101,Financial Accounting and Reportig Part 1,3,0,FALSE,NONE
+2023,CBAA,BSA,1st Year,First Semester,ITE101,Living in the IT Era,3,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,First Semester,OMTQM,Operating Management and TQM,3,0,FALSE,NONE
+2023,CBAA,BSA,1st Year,First Semester,PHD101,PnCians Holistic Development,1,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,First Semester,NSTP1,National Service Training Program 1,3,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,First Semester,PED101,Physical Activities Toward of Health and Fitness 1,2,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,Second Semester,GAD101,Gender Development,3,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,Second Semester,HIS101,Readings in Philippine History,3,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,Second Semester,HMN101,Art Appreciation,3,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,Second Semester,COM101,Purposive Communication,3,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,Second Semester,ACC103,Financial Accounting and Reporting Part 2,3,0,FALSE,ACC101
+2023,CBAA,BSA,1st Year,Second Semester,ACC102,Management Economics,3,0,FALSE,NONE
+2023,CBAA,BSA,1st Year,Second Semester,PHD102,PnCians Holistic Development,1,0,TRUE,NONE
+2023,CBAA,BSA,1st Year,Second Semester,NSTP2,National Service Training Program  2,3,0,TRUE,NSTP1
+2023,CBAA,BSA,1st Year,Second Semester,PED102,Physical Activities Toward of Health and Fitness 2,2,0,TRUE,PED101
+2023,CBAA,BSA,1st Year,SUMMER,ACC104,Management Science,3,0,FALSE,OMTQM
+2023,CBAA,BSA,1st Year,SUMMER,ACC105,Economic Development,3,0,FALSE,ACC102
+2023,CBAA,BSA,1st Year,SUMMER,ACC106,Law on Obligations and Contracts,3,0,FALSE,"COM101, ACC101"
+2023,CBAA,BSA,2nd Year,First Semester,STS101,"Science, Technology and Society",3,0,TRUE,NONE
+2023,CBAA,BSA,2nd Year,First Semester,SOC101,The Contemporary World,3,0,TRUE,NONE
+2023,CBAA,BSA,2nd Year,First Semester,RIZ101,Life and Works of Rizal,3,0,TRUE,NONE
+2023,CBAA,BSA,2nd Year,First Semester,ENT101,The Entrepreneurial Mind,3,0,TRUE,NONE
+2023,CBAA,BSA,2nd Year,First Semester,ETH101,Ethics,3,0,TRUE,NONE
+2023,CBAA,BSA,2nd Year,First Semester,ACC107,Business Laws and Regulations,3,0,FALSE,ACC106
+2023,CBAA,BSA,2nd Year,First Semester,ACC108,Conceptual Frameworks nad Accounting Standards,3,0,FALSE,ACC103
+2023,CBAA,BSA,2nd Year,First Semester,ACC109,Intermediate Accounting Part 1,3,0,FALSE,ACC103
+2023,CBAA,BSA,2nd Year,First Semester,PED103,Physical Activities Toward of Health and Fitness 3,2,0,TRUE,PED102
+2023,CBAA,BSA,2nd Year,Second Semester,ACC110,Income Taxation,3,0,FALSE,ACC103
+2023,CBAA,BSA,2nd Year,Second Semester,ACC111,Cost Accounting and Control,3,0,FALSE,ACC103
+2023,CBAA,BSA,2nd Year,Second Semester,ACC112,IT Application Tools in Business (with Lab),2,1,FALSE,NONE
+2023,CBAA,BSA,2nd Year,Second Semester,ACC113,Statistical Analysis with Software Application (with Lab),2,1,FALSE,MAT101
+2023,CBAA,BSA,2nd Year,Second Semester,ACC114,"Governance, Risk Management and Intenal Control",3,0,FALSE,ETH101
+2023,CBAA,BSA,2nd Year,Second Semester,ACC115,Intermediate Accounting Part 2,3,0,FALSE,"ACC108, ACC109"
+2023,CBAA,BSA,2nd Year,Second Semester,ACC118,Regulatory Frameworks and Legal Issues in Business,3,0,FALSE,ACC107
+2023,CBAA,BSA,2nd Year,Second Semester,ACE101,Human Behavior in Organization,3,0,FALSE,OMTQM
+2023,CBAA,BSA,2nd Year,Second Semester,PED104,Physical Activities Toward of Health and Fitness 4,2,0,TRUE,PED103
+2023,CBAA,BSA,2nd Year,SUMMER,ACC116,Business Taxations,3,0,FALSE,ACC109
+2023,CBAA,BSA,2nd Year,SUMMER,ACC117,Financial Management Part 1,3,0,FALSE,"ACC106, ACC109"
+2023,CBAA,BSA,2nd Year,SUMMER,IDT,International Business And Trade,3,0,FALSE,OMTQM
+2023,CBAA,BSA,3rd Year,First Semester,ACC119,Accounting Infromation System (with Lab),2,1,FALSE,"ACC108, ACC109, ACC112"
+2023,CBAA,BSA,3rd Year,First Semester,ACC120,Intermediate Accounting Part 3,3,0,FALSE,ACC115
+2023,CBAA,BSA,3rd Year,First Semester,ACC121,Financial Management Part 2,3,0,FALSE,ACC117
+2023,CBAA,BSA,3rd Year,First Semester,ACC122,Strategic Cost Maanagement,3,0,FALSE,ACC117
+2023,CBAA,BSA,3rd Year,First Semester,ACP101,Accounting for Special Transactions,3,0,FALSE,"ACC115, ACC118"
+2023,CBAA,BSA,3rd Year,First Semester,ACP102,Auditing and Assurance Principles,3,0,FALSE,"ACC114, ACC115"
+2023,CBAA,BSA,3rd Year,First Semester,STRATMGT,Strategic Management,3,0,FALSE,IBT
+2023,CBAA,BSA,3rd Year,First Semester,BAC105,Fundamentals of Business Analysis with Spreadsheet,2,1,FALSE,"MATH101, ACC112, ACC113"
+2023,CBAA,BSA,3rd Year,Second Semester,ACC123,Financial Markets,3,0,FALSE,ACC120
+2023,CBAA,BSA,3rd Year,Second Semester,ACE102,Valuation Concepts and Methods,3,0,FALSE,"ACC120, ACC121"
+2023,CBAA,BSA,3rd Year,Second Semester,ACE103,Updates in Financial Reporting Standards,3,0,FALSE,ACI101
+2023,CBAA,BSA,3rd Year,Second Semester,ACP103,Auditing and Assurance: Concepts and Principles Part 1,3,0,FALSE,"ACP101, ACP102"
+2023,CBAA,BSA,3rd Year,Second Semester,ACP104,Accounting for Business Combinations,3,0,FALSE,"ACP101, ACP102"
+2023,CBAA,BSA,3rd Year,Second Semester,ACP105,Accoounting for Government and Non-Profit Organizations,3,0,FALSE,"ACP101, ACP102"
+2023,CBAA,BSA,3rd Year,Second Semester,ACC124A,Accountancy Research 1,3,0,FALSE,NONE
+2023,CBAA,BSA,3rd Year,SUMMER,ACP106,Auditing and Assurance: Concept and Principles Part 2,3,0,FALSE,ACP103
+2023,CBAA,BSA,3rd Year,SUMMER,ACP107,Auditing in a CIS Environment (with Lab),2,1,FALSE,ACP103
+2023,CBAA,BSA,3rd Year,SUMMER,ACP108,Ausiting and Assurance: Specialized Industries,3,0,FALSE,ACP103
+2023,CBAA,BSA,4th Year,First Semester,ACE104,Operations Auditing,3,0,FALSE,"ACP102, ACP103"
+2023,CBAA,BSA,4th Year,First Semester,ACC124B,Accountancy Research 2,3,0,FALSE,ACC124A
+2023,CBAA,BSA,4th Year,First Semester,ACC125,Strategic Business Analysis,3,0,FALSE,"ACC122, ACC123"
+2023,CBAA,BSA,4th Year,First Semester,ACC126,Accounting Intership,6,0,FALSE,4th Year Standing
+2023,CBAA,BSA,4th Year,Second Semester,ACA101,Competency Apparaisal 1,4.5,0,FALSE,4th Year Standing
+2023,CBAA,BSA,4th Year,Second Semester,ACA102,Competency Apparaisal 2,4.5,0,FALSE,4th Year Standing

@@ -1,0 +1,71 @@
+Batch of Curriculum,Department,Program,Year Level,Semester,Course Code,Course Title,Lec,Lab,GenEd,Pre/Co-Requisite
+2023,COE,BSIE,1st Year ,First Semester,MAT101,Mathematics in the Modern World,3,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,First Semester,PSY100,Understanding the Self,3,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,First Semester,READ100,Science and Development of Reading,3,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,First Semester,ITE101,Living in the IT Era,3,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,First Semester,IEP101,Foundations of Industial Engineering,1,0,FALSE,NONE
+2023,COE,BSIE,1st Year ,First Semester,COE101,Calculus 1,3,0,FALSE,NONE
+2023,COE,BSIE,1st Year ,First Semester,COE102,Chemistry for Engineers,3,1,FALSE,NONE
+2023,COE,BSIE,1st Year ,First Semester,PHD101,PnCians Holistic Development,1,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,First Semester,NSTP1,National Service Training Program 1,3,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,First Semester,PED101,Physical Activities Toward Health and Fitness 1,2,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,Second Semester,GAD101,Gender and Development,3,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,Second Semester,HIS101,Readings in Philippine History,3,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,Second Semester,HMN101,Art Appreciation,3,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,Second Semester,COM101,Purposice Communication,3,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,Second Semester,COE104,Calculus 2,3,0,FALSE,COE101
+2023,COE,BSIE,1st Year ,Second Semester,COE110,Computer Aided Drafting,0,1,FALSE,NONE
+2023,COE,BSIE,1st Year ,Second Semester,COE105,Calculus-Based Physics,3,1,FALSE,COE101
+2023,COE,BSIE,1st Year ,Second Semester,PHD102,PnCians Holistic Development,1,0,TRUE,NONE
+2023,COE,BSIE,1st Year ,Second Semester,NSTP2,National Service Training Program 2,3,0,TRUE,NSTP1
+2023,COE,BSIE,1st Year ,Second Semester,PED102,Physical Activities Toward Health and Fitness 2,2,0,TRUE,PED101
+2023,COE,BSIE,1st Year ,SUMMER ,IEA101,Principles of Economics,3,0,FALSE,NONE
+2023,COE,BSIE,1st Year ,SUMMER ,IEP103,Statistical Analysis for IE 1,3,0,FALSE,MAT101
+2023,COE,BSIE,1st Year ,SUMMER ,IEP102,Introduction to Industrial Engineering,3,0,FALSE,IEP101
+2023,COE,BSIE,2nd Year ,First Semester,STS101,"Science, Technology and Society",3,0,TRUE,NONE
+2023,COE,BSIE,2nd Year ,First Semester,SOC101,The Contemporary World,3,0,TRUE,NONE
+2023,COE,BSIE,2nd Year ,First Semester,RIZ101,Life and Works of Rizal,3,0,TRUE,NONE
+2023,COE,BSIE,2nd Year ,First Semester,ENT101,The Entrepreneurial Mind,3,0,TRUE,NONE
+2023,COE,BSIE,2nd Year ,First Semester,ETH101,Ethics,3,0,TRUE,NONE
+2023,COE,BSIE,2nd Year ,First Semester,EP104,Statistical Analysis for IE 2,3,0,FALSE,IEP103
+2023,COE,BSIE,2nd Year ,First Semester,COE103,Computer Fundamentals,0,1,FALSE,NONE
+2023,COE,BSIE,2nd Year ,First Semester,COE108,Fifferential Equation,3,0,FALSE,COE104
+2023,COE,BSIE,2nd Year ,First Semester,PED103,Physical Activities Toward Health and Fitness 3,2,0,TRUE,PED102
+2023,COE,BSIE,2nd Year ,Second Semester,IEA102,Financial Accounting,3,0,FALSE,IEA101
+2023,COE,BSIE,2nd Year ,Second Semester,IEP105,Industrial Organization and Management,3,0,FALSE,"IEP102, 2nd Year Standing"
+2023,COE,BSIE,2nd Year ,Second Semester,COE106,Computer Programming,0,2,FALSE,COE103
+2023,COE,BSIE,2nd Year ,Second Semester,IEP107,Advanced Mathematics for IE,3,0,FALSE,COE106
+2023,COE,BSIE,2nd Year ,Second Semester,IE-108,Ergonomics 1: Physical and Cognitive Ergonomics,2,1,FALSE,"IEP104, IEP105, IEP106"
+2023,COE,BSIE,2nd Year ,Second Semester,IEP109,Engineering  Values and Ethics,2,0,FALSE,"ETH101, IEP105"
+2023,COE,BSIE,2nd Year ,Second Semester,IEA104,Elementary Electrical Engineering,3,0,FALSE,COE105
+2023,COE,BSIE,2nd Year ,Second Semester,IEP106,Industrial Materials and Processes,2,1,FALSE,"COE102, COE105"
+2023,COE,BSIE,2nd Year ,Second Semester,PED104,Physical Activities Toward Health and Fitness  4,2,0,TRUE,PED103
+2023,COE,BSIE,2nd Year ,SUMMER ,COE112,Engineering Mechanics,3,0,FALSE,COE105
+2023,COE,BSIE,2nd Year ,SUMMER ,COE109,Engineering Economics,3,0,FALSE,"MAT101, 2nd Year Standing"
+2023,COE,BSIE,2nd Year ,SUMMER ,COE113,Environmental Science and Engineering,3,0,FALSE,"COE102, 2nd Year Standing"
+2023,COE,BSIE,3rd Year ,First Semester,IEP110,Ergonomics 2: Organizaational Ergonomics,2,1,FALSE,"IEP108, IEP113"
+2023,COE,BSIE,3rd Year ,First Semester,IEP111,Operations Research 1,3,0,FALSE,"IEP104, IEP107"
+2023,COE,BSIE,3rd Year ,First Semester,IEP112,Quality Management Systems,3,0,FALSE,"IEP104, IEP105, IEP113"
+2023,COE,BSIE,3rd Year ,First Semester,IEP113,Work Study and Measurement,3,1,FALSE,"IEP104, IEP106, IEP110, IEP112"
+2023,COE,BSIE,3rd Year ,First Semester,IEA103,Managerial Accounting,3,0,FALSE,"IEA102, 3rd Year Standing"
+2023,COE,BSIE,3rd Year ,First Semester,TEC101,Technopreneurship,3,0,FALSE,"ENT101, 3rd Year Standing"
+2023,COE,BSIE,3rd Year ,First Semester,IEE101,IE Elective 1,3,1,FALSE,"COE106, IEP107, IEP112, COE106"
+2023,COE,BSIE,3rd Year ,Second Semester,IEP114,Operations Research 2,3,0,FALSE,"IEP111, IEP115"
+2023,COE,BSIE,3rd Year ,Second Semester,IEP115,Operations Management,3,1,FALSE,"IEP111, IEP112, IEP114"
+2023,COE,BSIE,3rd Year ,Second Semester,IEP116,Information  Systems,2,1,FALSE,"IEP112, IEE101"
+2023,COE,BSIE,3rd Year ,Second Semester,IEP117,Methods of Research,2,0,FALSE,"IEP112, IEP113"
+2023,COE,BSIE,3rd Year ,Second Semester,IEA105,Thermodynamics,3,0,FALSE,"COE104, COE112"
+2023,COE,BSIE,3rd Year ,Second Semester,IEE102,IE Elective 2,3,1,FALSE,"IEP110, IEP113, IEE101, CPP101"
+2023,COE,BSIE,3rd Year ,SUMMER ,COE114,IE Industry Immersion (240 hrs),3,0,FALSE,CANDIDATES FOR GRADUATION ONLY
+2023,COE,BSIE,4th Year ,First Semester,IEP118,IE Practice and Design 1 (Feasib 1),1,2,FALSE,"IEP115, IEP117, IEA103, IEP119"
+2023,COE,BSIE,4th Year ,First Semester,IEP119,Supply Chain Management,3,0,FALSE,IEP115
+2023,COE,BSIE,4th Year ,First Semester,IEE103,IE Elective 3,3,1,FALSE,"IEP115, IEE102, CPP102"
+2023,COE,BSIE,4th Year ,Second Semester,IEP120,IE Practice and Design 2,2,1,FALSE,IEP118
+2023,COE,BSIE,4th Year ,Second Semester,IEP121,Systems Enginnering,3,0,FALSE,"IEP116, IEP119, IEE103"
+2023,COE,BSIE,4th Year ,Second Semester,COE111,Basic Occupational Safety and Health,3,0,FALSE,"COE113, IEP115, IEE103"
+2023,COE,BSIE,ELECTIVES,PRODUCTION ENGINEERING,IEE101,IE Elective 1 (Computer Aided Mannufacturing),3,1,FALSE,"COE106, IEP107, IEP112"
+2023,COE,BSIE,ELECTIVES,PRODUCTION ENGINEERING,IEE102,IE Electice 2 (Product Design and Development),3,1,FALSE,"IEP110, IEP113, IEE101, CPP101"
+2023,COE,BSIE,ELECTIVES,PRODUCTION ENGINEERING,IEE103,IE Elective 3 (Lean Manufacturing),3,1,FALSE,"IEP115, IEE102, CPP102"
+2023,COE,BSIE,ELECTIVES,ARTIFICIAL INTELLIGENCE,CPP101,IE Elective 1 (Machine Learning),3,1,FALSE,"COE106, IEP104"
+2023,COE,BSIE,ELECTIVES,ARTIFICIAL INTELLIGENCE,CPP102,IE Elective 2 (Computer Vision),3,1,FALSE,CPP101
+2023,COE,BSIE,ELECTIVES,ARTIFICIAL INTELLIGENCE,CPP103,IE Elective 3 (Robotics),3,1,FALSE,CPP102

@@ -1,0 +1,62 @@
+Batch of Curriculum,Year Level,Semester,Course Code,Course Title,Lec,Lab,GenEd,Pre/Co-Requisite
+2023,1st Year,First Semester,CCS101,Introduction to Computing,2,1,FALSE,NONE
+2023,1st Year,First Semester,CCS102,Computer Programming 1,2,1,FALSE,NONE
+2023,1st Year,First Semester,MAT101,Mathematics in the Modern World,3,0,TRUE,NONE
+2023,1st Year,First Semester,PSY100,Understanding the Self,3,0,TRUE,NONE
+2023,1st Year,First Semester,READ100,Science and Development of Reading,3,0,TRUE,NONE
+2023,1st Year,First Semester,PHD101,PnCians Holistic Development,1,0,TRUE,NONE
+2023,1st Year,First Semester,NSTP1,National Service Training Program 1,3,0,TRUE,NONE
+2023,1st Year,First Semester,PED101,Physical Activities Toward Health and Fitness 1,2,0,TRUE,NONE
+2023,1st Year,Second Semester,CCS103,Computer Programming 2,2,1,FALSE,CCS102
+2023,1st Year,Second Semester,CCS114,Web Technologies,2,1,FALSE,CCS101
+2023,1st Year,Second Semester,GAD101,Gender and Development,3,0,TRUE,NONE
+2023,1st Year,Second Semester,HIS101,Readings in Philippine History,3,0,TRUE,NONE
+2023,1st Year,Second Semester,HMN101,Art Appreciation,3,0,TRUE,NONE
+2023,1st Year,Second Semester,COM101,Purposive Communication,3,0,TRUE,NONE
+2023,1st Year,Second Semester,PHD102,PnCians Holistic Development,1,0,TRUE,NONE
+2023,1st Year,Second Semester,NSTP2,National Service Training Program 2,3,0,TRUE,NSTP1
+2023,1st Year,Second Semester,PED102,Physical Activities Toward Health and Fitness 2,2,0,TRUE,PED101
+2023,2nd Year,First Semester,CCS105,Human Computer Interaction 1,2,1,FALSE,CCS103
+2023,2nd Year,First Semester,CS107,Data Structures and Algorithms,2,1,FALSE,CCS103
+2023,2nd Year,First Semester,STS101,"Science, Technology and Society",3,0,TRUE,NONE
+2023,2nd Year,First Semester,SOC101,The Contemporary World,3,0,TRUE,NONE
+2023,2nd Year,First Semester,CCS107,Life and Works of Rizal,3,0,TRUE,NONE
+2023,2nd Year,First Semester,ENT101,The Entrepreneurial Mind,3,0,TRUE,NONE
+2023,2nd Year,First Semester,ETH101,Ethics,3,0,TRUE,NONE
+2023,2nd Year,First Semester,,IT Elective 1,2,1,FALSE,CCS103
+2023,2nd Year,First Semester,PED103,Physical Activities Toward Health and Fitness 3,2,0,TRUE,PED102
+2023,2nd Year,Second Semester,CCS104,Discrete Structures,3,0,FALSE,CCS107
+2023,2nd Year,Second Semester,CCS106,Social and Professional Issues,3,0,FALSE,ETH101
+2023,2nd Year,Second Semester,CCS108,Object-Oriented Programming,2,1,FALSE,CCS107
+2023,2nd Year,Second Semester,CCS110,Information Management 1,2,1,FALSE,CCS107
+2023,2nd Year,Second Semester,ITP102,Integrative Programming & Technologies,2,1,FALSE,CCS108
+2023,2nd Year,Second Semester,ITP106,Human Computer Interaction 2,2,1,FALSE,CCS105
+2023,2nd Year,Second Semester,,IT Elective 2,2,1,FALSE,IT Elective 1
+2023,2nd Year,Second Semester,PED104,Physical Activities Toward Health and Fitness 4,2,0,TRUE,PED103
+2023,3rd Year,First Semester,CCS109,System Analysis and Design,3,0,FALSE,CCS110
+2023,3rd Year,First Semester,CCS111,Networking and Communication 1,2,1,FALSE,2nd Year Standing
+2023,3rd Year,First Semester,ITP103,System Integration and Architecture,2,1,FALSE,ITP102
+2023,3rd Year,First Semester,ITP104,Information Management 1,2,1,FALSE,CCS110
+2023,3rd Year,First Semester,ITP107,Mobile Application Development,2,1,FALSE,2nd Year Standing
+2023,3rd Year,First Semester,,IT Elective 3,2,1,FALSE,IT Elective 2
+2023,3rd Year,Second Semester,CCS112,"Application Development and Emerging
+Technologies",2,1,FALSE,ITP103
+2023,3rd Year,Second Semester,CCS113,Information Assurance and Security,2,1,FALSE,3rd Year Standing
+2023,3rd Year,Second Semester,ITP108,Capstone Project 1,3,0,FALSE,3rd Year Standing
+2023,3rd Year,Second Semester,ITP109,Platform Technologies,2,1,FALSE,ITP103
+2023,3rd Year,Second Semester,,IT Elective 4,2,1,FALSE,IT Elective 3
+2023,3rd Year,Second Semester,TEC101,Technopreneurship,3,0,FALSE,ENT101
+2023,3rd Year,Second Semester,ENV101,Environmental Science,3,0,TRUE,NONE
+2023,3rd Year,Summer,ITP101,Quantitative Methods,3,0,FALSE,CCS104
+2023,3rd Year,Summer,ITP105,Networking and Communication 2,2,1,FALSE,CCS111
+2023,4th Year,First Semester,ITP111,System Administration and Maintenance,2,1,FALSE,"ITP105, ITP109"
+2023,4th Year,First Semester,ITP112,Capstone Project 2,3,0,FALSE,ITP108
+2023,4th Year,Second Semester,ITP113,IT Practicum (500 hrs),6,0,FALSE,ONLY Graduating Students
+2023,ELECTIVES,Applications Development (Wed and Mobile),ITEW1,Responsive Wed Design,3,0,FALSE,CCS114
+2023,ELECTIVES,Applications Development (Wed and Mobile),ITEW2,Client Server-Side Scripting,2,1,FALSE,ITEW1
+2023,ELECTIVES,Applications Development (Wed and Mobile),ITEW3,Mobile Programming 1,2,1,FALSE,ITEW2
+2023,ELECTIVES,Applications Development (Wed and Mobile),ITEW4,Mobile Programming 2,2,1,FALSE,ITEW3
+2023,ELECTIVES,Network Security,NWS1,Network Security,3,0,FALSE,CCS114
+2023,ELECTIVES,Network Security,NWS2,Crytography,2,1,FALSE,NWS1
+2023,ELECTIVES,Network Security,NWS3,Cloud Computing Architecture & Security,2,1,FALSE,NWS2
+2023,ELECTIVES,Network Security,NWS4,Cybersecurity,2,1,FALSE,NWS3
