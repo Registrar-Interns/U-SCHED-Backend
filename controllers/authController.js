@@ -77,6 +77,11 @@ exports.login = (req, res) => {
 
     const user = results[0];
 
+    // 🔴 Prevent login if user is INACTIVE
+    if (user.status === 'INACTIVE') {
+      return res.status(401).json({ message: 'Your account is inactive. Please contact the administrator.' });
+    }
+
     // Check password
     const isValid = bcrypt.compareSync(password, user.password);
     if (!isValid) {
