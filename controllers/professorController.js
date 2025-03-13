@@ -1,4 +1,4 @@
-const db = require("../../db"); // ✅ Ensure correct import
+const db = require("../db"); // ✅ Ensure correct import
 
 // Get all professors (FIXED)
 // ✅ Fix Backend Query to Ensure Full Name is Generated Properly
@@ -16,7 +16,7 @@ exports.getAllProfessors = async (req, res) => {
                         IFNULL(CONCAT(' ', extended_name), '')
                     ) 
                 END AS full_name,
-                department,
+                college_id as department,
                 faculty_type,
                 position,
                 time_availability,

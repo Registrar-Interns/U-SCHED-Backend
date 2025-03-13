@@ -767,3 +767,25 @@ exports.sendProfessorPassword = async (req, res) => {
       .json({ message: "Internal server error", error: err.message });
   }
 };
+
+//const authenticateToken = require("../middleware/authMiddleware"); // Ensure authentication middleware is used
+exports.getCurrentUser = (req, res) => {
+  const userId = req.user.id; // Extract user ID from token payload
+
+  pool.query(
+      `SELECT u.user_id, u.user_type, u.email, a.department 
+       FROM users u 
+       JOIN admin a ON u.ref_id = a.admin_id
+       WHERE u.user_id = ?`,
+      [userId],
+      (err, results) => {
+          if (err) {
+              return res.status(500).json({ error: err.message });
+          }
+          if (results.length === 0) {
+              return res.status(404).json({ message: "User not found" });
+          }
+          res.json(results[0]); // Return user details
+      }
+  );
+};

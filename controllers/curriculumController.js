@@ -259,4 +259,33 @@ exports.getAllYears = (req, res) => {
   });
 };
 
+// GET /api/curriculum_courses?department=CCS
+exports.getCurriculumCoursesByDepartment = (req, res) => {
+  const { department } = req.query;
+
+  if (!department) {
+    return res.status(400).json({ message: "Department is required." });
+  }
+
+  console.log(`Fetching curriculum courses for department: ${department}`);
+
+  const query = `
+    SELECT DISTINCT c.course_title 
+    FROM curriculum_courses c
+    JOIN program p ON c.program_id = p.program_id
+    JOIN college col ON c.college_id = col.college_id
+    WHERE col.college_code = ?
+  `;
+
+  pool.query(query, [department], (err, results) => {
+    if (err) {
+      console.error("Error fetching curriculum courses:", err);
+      return res.status(500).json({ message: "Database query failed", error: err.message });
+    }
+
+    console.log("Database results:", results);
+    res.json(results); // Send fetched course titles
+  });
+};
+
 exports.upload = upload;
