@@ -8,8 +8,14 @@ router.get('/', usersController.getAllUsers);
 // POST create admin
 router.post('/', usersController.createAdminUser);
 
+// POST create dean/chair
+router.post('/deanchair', usersController.createDeanChairUser);
+
 // PUT update admin (edit admin fields)
 router.put('/admin/:userId', usersController.updateAdminUser);
+
+// PUT update dean/chair (edit dean/chair fields)
+router.put('/deanchair/:userId', usersController.updateDeanChairUser);
 
 // PUT update professor (edit professor fields)
 router.put('/professor/:userId', usersController.updateProfessorUser);

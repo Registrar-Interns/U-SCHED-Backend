@@ -53,13 +53,16 @@ exports.login = (req, res) => {
       
       -- If user_type=PROFESSOR, get position/department; if ADMIN, might be NULL
       p.position,
-      p.department
+      p.college_id,
+      c.college_code AS department
       
     FROM users u
     LEFT JOIN professor p 
       ON (u.ref_id = p.professor_id AND u.user_type = 'PROFESSOR')
     LEFT JOIN admin a 
       ON (u.ref_id = a.admin_id AND u.user_type = 'ADMIN')
+    LEFT JOIN college c
+      ON p.college_id = c.college_id
     WHERE u.email = ?
     LIMIT 1
   `;

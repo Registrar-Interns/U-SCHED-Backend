@@ -53,7 +53,7 @@ exports.getAllUsers = (req, res) => {
     u.user_id,
     CONCAT(p.first_name, ' ', COALESCE(p.middle_name, ''), ' ', p.last_name) AS full_name,
     u.email,
-    p.department,
+    c.college_code AS department,
     p.faculty_type,
     p.position,
     u.role,
@@ -61,6 +61,7 @@ exports.getAllUsers = (req, res) => {
     u.password  -- <-- Also add password
   FROM users u
   JOIN professor p ON u.ref_id = p.professor_id
+  LEFT JOIN college c ON p.college_id = c.college_id
   WHERE u.user_type = 'PROFESSOR'
   ORDER BY user_id ASC
   `;
@@ -272,6 +273,308 @@ exports.updateAdminUser = async (req, res) => {
   } catch (err) {
     console.error("Error in updateAdminUser:", err);
     return res.status(500).json({ message: "Internal server error", error: err.message });
+  }
+};
+
+// POST /api/users/deanchair
+// Creates a new Dean/Chair by inserting into the professor table, then users table
+exports.createDeanChairUser = async (req, res) => {
+  try {
+    const {
+      first_name,
+      middle_name,
+      last_name,
+      extended_name,
+      email,
+      password,
+      college_id,
+      faculty_type,
+      position,
+      bachelorsDegree,
+      mastersDegree,
+      doctorateDegree,
+      specialization,
+      status
+    } = req.body;
+
+    // Basic validation
+    if (
+      !first_name ||
+      !middle_name ||
+      !last_name ||
+      !email ||
+      !password ||
+      !college_id ||
+      !faculty_type ||
+      !position ||
+      !bachelorsDegree ||
+      !mastersDegree ||
+      !doctorateDegree ||
+      !specialization ||
+      !status
+    ) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Hash the password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // 1) Insert into professor table
+    const insertProfessorQuery = `
+      INSERT INTO professor (
+        first_name,
+        middle_name,
+        last_name,
+        extended_name,
+        college_id,
+        faculty_type,
+        position,
+        bachelorsDegree,
+        mastersDegree,
+        doctorateDegree,
+        specialization,
+        status
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    pool.query(
+      insertProfessorQuery,
+      [
+        first_name,
+        middle_name,
+        last_name,
+        extended_name || "",
+        college_id,
+        faculty_type,
+        position,
+        bachelorsDegree,
+        mastersDegree,
+        doctorateDegree,
+        specialization,
+        status
+      ],
+      (profErr, profResult) => {
+        if (profErr) {
+          console.error("Error inserting dean/chair:", profErr);
+          return res.status(500).json({
+            message: "Error inserting dean/chair",
+            error: profErr.message
+          });
+        }
+
+        // 2) Now insert into users table, linking via ref_id = professor_id
+        const newProfessorId = profResult.insertId;
+
+        const insertUsersQuery = `
+          INSERT INTO users (
+            ref_id,
+            user_type,
+            email,
+            password,
+            role,
+            status
+          )
+          VALUES (?, 'PROFESSOR', ?, ?, 'USER', ?)
+        `;
+
+        pool.query(
+          insertUsersQuery,
+          [newProfessorId, email, hashedPassword, status],
+          (userErr, userResult) => {
+            if (userErr) {
+              console.error("Error inserting user:", userErr);
+              return res.status(500).json({
+                message: "Error inserting user",
+                error: userErr.message
+              });
+            }
+
+            // Optionally send password email
+            try {
+              sendNewPasswordEmail(email, first_name, last_name, password);
+            } catch (emailErr) {
+              console.error("Error sending email:", emailErr);
+              // Continue even if email fails
+            }
+
+            return res
+              .status(201)
+              .json({ message: "Dean/Chair user created successfully" });
+          }
+        );
+      }
+    );
+  } catch (err) {
+    console.error("Error in createDeanChairUser:", err);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: err.message
+    });
+  }
+};
+
+// PUT /api/users/deanchair/:userId
+// Updates a Dean/Chair user in both professor and users tables
+exports.updateDeanChairUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const {
+      first_name,
+      middle_name,
+      last_name,
+      extended_name,
+      email,
+      newPassword,
+      college_id,
+      faculty_type,
+      position,
+      bachelorsDegree,
+      mastersDegree,
+      doctorateDegree,
+      specialization,
+      status
+    } = req.body;
+
+    // Basic validation
+    if (
+      !first_name ||
+      !middle_name ||
+      !last_name ||
+      !email ||
+      !college_id ||
+      !faculty_type ||
+      !position ||
+      !bachelorsDegree ||
+      !mastersDegree ||
+      !doctorateDegree ||
+      !specialization ||
+      !status
+    ) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // 1) Find the professor record (ref_id) linked to this user
+    const findQuery = `SELECT ref_id, user_type, email FROM users WHERE user_id = ?`;
+    pool.query(findQuery, [userId], async (findErr, findResults) => {
+      if (findErr) {
+        console.error("Error finding dean/chair user:", findErr);
+        return res.status(500).json({ message: "Error finding user", error: findErr.message });
+      }
+      
+      if (!findResults.length) {
+        return res.status(404).json({ message: "User not found." });
+      }
+      
+      const { ref_id, user_type } = findResults[0];
+      
+      if (user_type !== "PROFESSOR") {
+        return res.status(400).json({ message: "Not a professor/dean/chair user." });
+      }
+
+      // 2) If a new password is provided, hash it
+      let hashedPassword = "";
+      let plainPassword = "";
+      
+      if (newPassword && newPassword.trim()) {
+        plainPassword = newPassword.trim();
+        const saltRounds = 10;
+        hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+      }
+
+      // 3) Update the professor table
+      const updateProfessorQuery = `
+        UPDATE professor
+        SET 
+          first_name = ?,
+          middle_name = ?,
+          last_name = ?,
+          extended_name = ?,
+          college_id = ?,
+          faculty_type = ?,
+          position = ?,
+          bachelorsDegree = ?,
+          mastersDegree = ?,
+          doctorateDegree = ?,
+          specialization = ?,
+          status = ?
+        WHERE professor_id = ?
+      `;
+      
+      const professorValues = [
+        first_name,
+        middle_name,
+        last_name,
+        extended_name || "",
+        college_id,
+        faculty_type,
+        position,
+        bachelorsDegree,
+        mastersDegree,
+        doctorateDegree,
+        specialization,
+        status,
+        ref_id
+      ];
+
+      pool.query(updateProfessorQuery, professorValues, (profErr) => {
+        if (profErr) {
+          console.error("Error updating dean/chair:", profErr);
+          return res.status(500).json({ 
+            message: "Error updating dean/chair", 
+            error: profErr.message 
+          });
+        }
+
+        // 4) Update the users table (email, status, and optionally password)
+        let updateUsersQuery = `
+          UPDATE users
+          SET 
+            email = ?,
+            status = ?
+        `;
+        
+        let usersValues = [email, status];
+        
+        // Add password update if provided
+        if (hashedPassword) {
+          updateUsersQuery += `, password = ?`;
+          usersValues.push(hashedPassword);
+        }
+        
+        updateUsersQuery += ` WHERE user_id = ?`;
+        usersValues.push(userId);
+
+        pool.query(updateUsersQuery, usersValues, async (userErr) => {
+          if (userErr) {
+            console.error("Error updating dean/chair user record:", userErr);
+            return res.status(500).json({ 
+              message: "Error updating user record", 
+              error: userErr.message 
+            });
+          }
+
+          // 5) If a new password was provided, send it via email
+          if (plainPassword) {
+            try {
+              await sendNewPasswordEmail(email, first_name, last_name, plainPassword);
+            } catch (mailErr) {
+              console.error("Error sending dean/chair password email:", mailErr);
+              // Continue even if email fails
+            }
+          }
+
+          return res.json({ message: "Dean/Chair updated successfully." });
+        });
+      });
+    });
+  } catch (err) {
+    console.error("Error in updateDeanChairUser:", err);
+    return res.status(500).json({ 
+      message: "Internal server error", 
+      error: err.message 
+    });
   }
 };
 

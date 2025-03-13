@@ -11,4 +11,6 @@ router.get('/', curriculumController.getCurriculum);
 // Endpoint to get distinct years for dropdown
 router.get('/years', curriculumController.getAllYears);
 
+router.get('/curriculum_courses', curriculumController.getCurriculumCoursesByDepartment);
+
 module.exports = router;
