@@ -578,6 +578,50 @@ exports.updateDeanChairUser = async (req, res) => {
   }
 };
 
+exports.getDeanChairById = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    // First get the ref_id from users table
+    const userQuery = "SELECT ref_id FROM users WHERE user_id = ? AND user_type = 'PROFESSOR'";
+    
+    pool.query(userQuery, [userId], (userErr, userResults) => {
+      if (userErr) {
+        return res.status(500).json({ message: "Error finding user", error: userErr.message });
+      }
+      
+      if (!userResults.length) {
+        return res.status(404).json({ message: "User not found." });
+      }
+      
+      const professorId = userResults[0].ref_id;
+      
+      // Now get the full professor details
+      const professorQuery = `
+        SELECT p.*, c.college_name, c.college_code 
+        FROM professor p
+        LEFT JOIN college c ON p.college_id = c.college_id
+        WHERE p.professor_id = ?
+      `;
+      
+      pool.query(professorQuery, [professorId], (profErr, profResults) => {
+        if (profErr) {
+          return res.status(500).json({ message: "Error finding professor details", error: profErr.message });
+        }
+        
+        if (!profResults.length) {
+          return res.status(404).json({ message: "Professor details not found." });
+        }
+        
+        return res.json(profResults[0]);
+      });
+    });
+  } catch (err) {
+    console.error("Error in getDeanChairById:", err);
+    return res.status(500).json({ message: "Internal server error", error: err.message });
+  }
+};
+
 // NEW: PUT /api/users/professor/:userId
 // Updates professor details (in professor and users tables).
 // If a new password is provided, update it and send the plain password via email.

@@ -14,6 +14,9 @@ router.post('/deanchair', usersController.createDeanChairUser);
 // PUT update admin (edit admin fields)
 router.put('/admin/:userId', usersController.updateAdminUser);
 
+// GET dean/chair by ID
+router.get('/deanchair/:userId', usersController.getDeanChairById);
+
 // PUT update dean/chair (edit dean/chair fields)
 router.put('/deanchair/:userId', usersController.updateDeanChairUser);
 
