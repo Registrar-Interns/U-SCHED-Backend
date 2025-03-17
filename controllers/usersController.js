@@ -786,9 +786,13 @@ exports.getDeanChairById = async (req, res) => {
 exports.updateProfessorUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-    // Expected fields: department, faculty_type, position, degrees, specialization, status, newPassword, time_availability
-    const { department, faculty_type, position, degrees, specialization, status, newPassword, time_availability } = req.body;
-    if (!department || !faculty_type || !position || !degrees || !specialization || !status) {
+    // Expected fields: faculty_type, position, degrees, specialization, status, newPassword, time_availability
+    // Note: department is removed as it's just an alias for college_code
+    // Note: time_availability is now optional
+    const { faculty_type, position, degrees, specialization, status, newPassword, time_availability } = req.body;
+    
+    // Validate required fields
+    if (!faculty_type || !position || !specialization || !status) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -816,10 +820,10 @@ exports.updateProfessorUser = async (req, res) => {
       }
 
       // 3) Update the professor table
+      // Remove department field from the query as it doesn't exist in the professor table
       const updateProfessorQuery = `
         UPDATE professor
         SET 
-          department = ?,
           faculty_type = ?,
           position = ?,
           bachelorsDegree = ?,  -- Assuming degrees are stored as a concatenated string or update as needed
@@ -827,8 +831,8 @@ exports.updateProfessorUser = async (req, res) => {
           status = ?
         WHERE professor_id = ?
       `;
-      // Here, we assume 'degrees' holds the combined degrees. Adjust as needed.
-      const professorValues = [department, faculty_type, position, degrees, specialization, status, ref_id];
+      // Remove department from the values array
+      const professorValues = [faculty_type, position, degrees, specialization, status, ref_id];
 
       pool.query(updateProfessorQuery, professorValues, (profErr) => {
         if (profErr) {

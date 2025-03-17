@@ -270,11 +270,14 @@ exports.getCurriculumCoursesByDepartment = (req, res) => {
   console.log(`Fetching curriculum courses for department: ${department}`);
 
   const query = `
-    SELECT DISTINCT c.course_title 
+    SELECT c.id, c.college_id, c.program_id, c.year, c.semester, 
+           c.course_code, c.course_title, c.lec, c.lab, c.total, 
+           c.pre_co_requisite, c.is_gened
     FROM curriculum_courses c
     JOIN program p ON c.program_id = p.program_id
     JOIN college col ON c.college_id = col.college_id
     WHERE col.college_code = ?
+    ORDER BY c.year, c.semester, c.course_code
   `;
 
   pool.query(query, [department], (err, results) => {
@@ -284,7 +287,26 @@ exports.getCurriculumCoursesByDepartment = (req, res) => {
     }
 
     console.log("Database results:", results);
-    res.json(results); // Send fetched course titles
+    res.json(results); // Send fetched course details
+  });
+};
+
+// GET /api/curriculum/courses/count
+exports.getTotalCoursesCount = (req, res) => {
+  const query = `
+    SELECT COUNT(*) as total
+    FROM curriculum_courses
+  `;
+
+  pool.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching total courses count:", err);
+      return res.status(500).json({ message: "Database query failed", error: err.message });
+    }
+
+    const count = results[0]?.total || 0;
+    console.log("Total courses count:", count);
+    res.json({ count });
   });
 };
 

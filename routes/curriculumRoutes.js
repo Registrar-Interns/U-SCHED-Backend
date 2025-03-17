@@ -13,4 +13,7 @@ router.get('/years', curriculumController.getAllYears);
 
 router.get('/curriculum_courses', curriculumController.getCurriculumCoursesByDepartment);
 
+// Endpoint to get total count of all courses
+router.get('/courses/count', curriculumController.getTotalCoursesCount);
+
 module.exports = router;
