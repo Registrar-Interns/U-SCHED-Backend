@@ -100,8 +100,17 @@ exports.getProfessorById = async (req, res) => {
             [id]
         );
         
+        // Get email from users table
+        const [userInfo] = await db.promise().query(
+            `SELECT email 
+             FROM users 
+             WHERE ref_id = ? AND user_type = 'PROFESSOR'`,
+            [id]
+        );
+        
         const professorData = {
             ...results[0],
+            email: userInfo.length > 0 ? userInfo[0].email : "",
             time_availability: timeAvailability.length > 0 ? timeAvailability[0] : {
                 monday: "",
                 tuesday: "",
@@ -129,8 +138,53 @@ exports.addProfessor = async (req, res) => {
             mastersDegree, doctorateDegree, specialization, status, email
         } = req.body;
 
-        if (!first_name || !last_name || !college_id || !faculty_type || !position || !status) {
-            return res.status(400).json({ error: "Missing required fields" });
+        // Debug log
+        console.log("Adding professor with data:", { 
+            first_name, last_name, college_id, faculty_type, position, status 
+        });
+        console.log("College ID type:", typeof college_id);
+        console.log("Full request body:", req.body);
+        
+        // Detailed validation logging
+        console.log("Validation check:");
+        console.log("- first_name:", first_name, Boolean(first_name));
+        console.log("- last_name:", last_name, Boolean(last_name));
+        console.log("- college_id:", college_id, Boolean(college_id));
+        console.log("- faculty_type:", faculty_type, Boolean(faculty_type));
+        console.log("- position:", position, Boolean(position));
+        console.log("- status:", status, Boolean(status));
+
+        // Check if any required fields are missing
+        const missingFields = [];
+        if (!first_name) missingFields.push("first_name");
+        if (!last_name) missingFields.push("last_name");
+        if (!college_id && college_id !== 0) missingFields.push("college_id");
+        if (!faculty_type) missingFields.push("faculty_type");
+        if (!position) missingFields.push("position");
+        if (!status) missingFields.push("status");
+        
+        if (missingFields.length > 0) {
+            return res.status(400).json({ 
+                error: "Missing required fields",
+                details: `The following fields are required: ${missingFields.join(", ")}`,
+                receivedData: {
+                    first_name, last_name, college_id, faculty_type, position, status
+                }
+            });
+        }
+
+        // Ensure college_id is a number
+        let collegeIdNum;
+        if (typeof college_id === 'number') {
+            collegeIdNum = college_id;
+        } else {
+            collegeIdNum = parseInt(college_id);
+            if (isNaN(collegeIdNum)) {
+                return res.status(400).json({ 
+                    error: "Invalid college ID", 
+                    details: `College ID must be a number. Received: ${college_id} (${typeof college_id})` 
+                });
+            }
         }
 
         // Start a transaction
@@ -138,6 +192,20 @@ exports.addProfessor = async (req, res) => {
         await connection.beginTransaction();
 
         try {
+            // Verify that the college_id exists in the college table
+            const [collegeResult] = await connection.query(
+                "SELECT college_id FROM college WHERE college_id = ?",
+                [collegeIdNum]
+            );
+            
+            if (collegeResult.length === 0) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    error: "Invalid college ID", 
+                    details: `College ID ${collegeIdNum} does not exist in the database.` 
+                });
+            }
+            
             // 1. Insert into professor table
             const [professorResult] = await connection.query(`
                 INSERT INTO professor (
@@ -146,7 +214,7 @@ exports.addProfessor = async (req, res) => {
                     mastersDegree, doctorateDegree, specialization, status
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
-                first_name, middle_name || null, last_name, extended_name || null, college_id,
+                first_name, middle_name || null, last_name, extended_name || null, collegeIdNum,
                 faculty_type, position, bachelorsDegree || null,
                 mastersDegree || null, doctorateDegree || null, 
                 Array.isArray(specialization) ? specialization.join(", ") : specialization, 
@@ -214,11 +282,74 @@ exports.updateProfessor = async (req, res) => {
             mastersDegree, doctorateDegree, specialization, status, email
         } = req.body;
 
+        // Debug log
+        console.log("Updating professor ID:", id, "with data:", { 
+            first_name, last_name, college_id, faculty_type, position, status 
+        });
+        console.log("College ID type:", typeof college_id);
+        console.log("Full request body:", req.body);
+        
+        // Detailed validation logging
+        console.log("Validation check:");
+        console.log("- first_name:", first_name, Boolean(first_name));
+        console.log("- last_name:", last_name, Boolean(last_name));
+        console.log("- college_id:", college_id, Boolean(college_id));
+        console.log("- faculty_type:", faculty_type, Boolean(faculty_type));
+        console.log("- position:", position, Boolean(position));
+        console.log("- status:", status, Boolean(status));
+
+        // Check if any required fields are missing
+        const missingFields = [];
+        if (!first_name) missingFields.push("first_name");
+        if (!last_name) missingFields.push("last_name");
+        if (!college_id && college_id !== 0) missingFields.push("college_id");
+        if (!faculty_type) missingFields.push("faculty_type");
+        if (!position) missingFields.push("position");
+        if (!status) missingFields.push("status");
+        
+        if (missingFields.length > 0) {
+            return res.status(400).json({ 
+                error: "Missing required fields", 
+                details: `The following fields are required: ${missingFields.join(", ")}`,
+                receivedData: {
+                    first_name, last_name, college_id, faculty_type, position, status
+                }
+            });
+        }
+
+        // Ensure college_id is a number
+        let collegeIdNum;
+        if (typeof college_id === 'number') {
+            collegeIdNum = college_id;
+        } else {
+            collegeIdNum = parseInt(college_id);
+            if (isNaN(collegeIdNum)) {
+                return res.status(400).json({ 
+                    error: "Invalid college ID", 
+                    details: `College ID must be a number. Received: ${college_id} (${typeof college_id})` 
+                });
+            }
+        }
+
         // Start a transaction
         const connection = await db.promise().getConnection();
         await connection.beginTransaction();
 
         try {
+            // Verify that the college_id exists in the college table
+            const [collegeResult] = await connection.query(
+                "SELECT college_id FROM college WHERE college_id = ?",
+                [collegeIdNum]
+            );
+            
+            if (collegeResult.length === 0) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    error: "Invalid college ID", 
+                    details: `College ID ${collegeIdNum} does not exist in the database.` 
+                });
+            }
+            
             // 1. Update professor table
             const [professorResult] = await connection.query(`
                 UPDATE professor 
@@ -227,7 +358,7 @@ exports.updateProfessor = async (req, res) => {
                     mastersDegree=?, doctorateDegree=?, specialization=?, status=? 
                 WHERE professor_id=?
             `, [
-                first_name, middle_name || null, last_name, extended_name || null, college_id,
+                first_name, middle_name || null, last_name, extended_name || null, collegeIdNum,
                 faculty_type, position, bachelorsDegree || null,
                 mastersDegree || null, doctorateDegree || null, 
                 Array.isArray(specialization) ? specialization.join(", ") : specialization, 
@@ -451,6 +582,17 @@ exports.updateProfessorTimeAvailability = async (req, res) => {
         }
         
         res.status(200).json({ message: "Time availability updated successfully" });
+    } catch (err) {
+        console.error("Database Error:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// Get all colleges (for debugging and reference)
+exports.getAllColleges = async (req, res) => {
+    try {
+        const [results] = await db.promise().query("SELECT college_id, college_name, college_code FROM college");
+        res.status(200).json(results);
     } catch (err) {
         console.error("Database Error:", err);
         res.status(500).json({ error: "Internal Server Error" });

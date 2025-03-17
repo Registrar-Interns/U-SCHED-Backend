@@ -9,6 +9,9 @@ router.post("/", professorController.addProfessor);
 router.put("/:id", professorController.updateProfessor);
 router.delete("/:id", professorController.deleteProfessor);
 
+// College routes (for debugging and reference)
+router.get("/colleges/all", professorController.getAllColleges);
+
 // Specialization routes
 router.get("/subjects/all", professorController.getAllSubjects);
 
