@@ -294,7 +294,8 @@ exports.createDeanChairUser = async (req, res) => {
       mastersDegree,
       doctorateDegree,
       specialization,
-      status
+      status,
+      time_availability
     } = req.body;
 
     // Basic validation
@@ -364,9 +365,47 @@ exports.createDeanChairUser = async (req, res) => {
           });
         }
 
-        // 2) Now insert into users table, linking via ref_id = professor_id
+        // Get the newly inserted professor_id
         const newProfessorId = profResult.insertId;
 
+        // 2) Insert time availability if provided
+        if (time_availability) {
+          const insertTimeAvailabilityQuery = `
+            INSERT INTO time_availability (
+              professor_id,
+              monday,
+              tuesday,
+              wednesday,
+              thursday,
+              friday,
+              saturday,
+              sunday
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `;
+
+          pool.query(
+            insertTimeAvailabilityQuery,
+            [
+              newProfessorId,
+              time_availability.monday || null,
+              time_availability.tuesday || null,
+              time_availability.wednesday || null,
+              time_availability.thursday || null,
+              time_availability.friday || null,
+              time_availability.saturday || null,
+              time_availability.sunday || null
+            ],
+            (timeErr) => {
+              if (timeErr) {
+                console.error("Error inserting time availability:", timeErr);
+                // Continue even if time availability insertion fails
+              }
+            }
+          );
+        }
+
+        // 3) Now insert into users table, linking via ref_id = professor_id
         const insertUsersQuery = `
           INSERT INTO users (
             ref_id,
@@ -434,7 +473,8 @@ exports.updateDeanChairUser = async (req, res) => {
       mastersDegree,
       doctorateDegree,
       specialization,
-      status
+      status,
+      time_availability
     } = req.body;
 
     // Basic validation
@@ -527,7 +567,93 @@ exports.updateDeanChairUser = async (req, res) => {
           });
         }
 
-        // 4) Update the users table (email, status, and optionally password)
+        // 4) Update time availability if provided
+        if (time_availability) {
+          // First check if time availability record exists
+          const checkTimeAvailabilityQuery = `
+            SELECT availability_id FROM time_availability WHERE professor_id = ?
+          `;
+          
+          pool.query(checkTimeAvailabilityQuery, [ref_id], (checkErr, checkResults) => {
+            if (checkErr) {
+              console.error("Error checking time availability:", checkErr);
+              // Continue even if time availability check fails
+            } else {
+              if (checkResults.length > 0) {
+                // Update existing time availability record
+                const updateTimeAvailabilityQuery = `
+                  UPDATE time_availability
+                  SET 
+                    monday = ?,
+                    tuesday = ?,
+                    wednesday = ?,
+                    thursday = ?,
+                    friday = ?,
+                    saturday = ?,
+                    sunday = ?
+                  WHERE professor_id = ?
+                `;
+                
+                pool.query(
+                  updateTimeAvailabilityQuery,
+                  [
+                    time_availability.monday || null,
+                    time_availability.tuesday || null,
+                    time_availability.wednesday || null,
+                    time_availability.thursday || null,
+                    time_availability.friday || null,
+                    time_availability.saturday || null,
+                    time_availability.sunday || null,
+                    ref_id
+                  ],
+                  (updateTimeErr) => {
+                    if (updateTimeErr) {
+                      console.error("Error updating time availability:", updateTimeErr);
+                      // Continue even if time availability update fails
+                    }
+                  }
+                );
+              } else {
+                // Insert new time availability record
+                const insertTimeAvailabilityQuery = `
+                  INSERT INTO time_availability (
+                    professor_id,
+                    monday,
+                    tuesday,
+                    wednesday,
+                    thursday,
+                    friday,
+                    saturday,
+                    sunday
+                  )
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                `;
+                
+                pool.query(
+                  insertTimeAvailabilityQuery,
+                  [
+                    ref_id,
+                    time_availability.monday || null,
+                    time_availability.tuesday || null,
+                    time_availability.wednesday || null,
+                    time_availability.thursday || null,
+                    time_availability.friday || null,
+                    time_availability.saturday || null,
+                    time_availability.sunday || null
+                  ],
+                  (insertTimeErr) => {
+                    if (insertTimeErr) {
+                      console.error("Error inserting time availability:", insertTimeErr);
+                      // Continue even if time availability insertion fails
+                    }
+                  }
+                );
+              }
+            }
+          });
+        }
+
+        // 5) Update the users table (email, status, and optionally password)
         let updateUsersQuery = `
           UPDATE users
           SET 
@@ -555,7 +681,7 @@ exports.updateDeanChairUser = async (req, res) => {
             });
           }
 
-          // 5) If a new password was provided, send it via email
+          // 6) If a new password was provided, send it via email
           if (plainPassword) {
             try {
               await sendNewPasswordEmail(email, first_name, last_name, plainPassword);
@@ -613,7 +739,39 @@ exports.getDeanChairById = async (req, res) => {
           return res.status(404).json({ message: "Professor details not found." });
         }
         
-        return res.json(profResults[0]);
+        // Get time availability data
+        const timeAvailabilityQuery = `
+          SELECT monday, tuesday, wednesday, thursday, friday, saturday, sunday
+          FROM time_availability
+          WHERE professor_id = ?
+        `;
+        
+        pool.query(timeAvailabilityQuery, [professorId], (timeErr, timeResults) => {
+          if (timeErr) {
+            console.error("Error fetching time availability:", timeErr);
+            // Continue even if time availability fetch fails
+            return res.json(profResults[0]);
+          }
+          
+          // Combine professor data with time availability
+          const professorData = profResults[0];
+          
+          if (timeResults.length > 0) {
+            professorData.time_availability = timeResults[0];
+          } else {
+            professorData.time_availability = {
+              monday: "",
+              tuesday: "",
+              wednesday: "",
+              thursday: "",
+              friday: "",
+              saturday: "",
+              sunday: ""
+            };
+          }
+          
+          return res.json(professorData);
+        });
       });
     });
   } catch (err) {
@@ -628,8 +786,8 @@ exports.getDeanChairById = async (req, res) => {
 exports.updateProfessorUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-    // Expected fields: department, faculty_type, position, degrees, specialization, status, newPassword
-    const { department, faculty_type, position, degrees, specialization, status, newPassword } = req.body;
+    // Expected fields: department, faculty_type, position, degrees, specialization, status, newPassword, time_availability
+    const { department, faculty_type, position, degrees, specialization, status, newPassword, time_availability } = req.body;
     if (!department || !faculty_type || !position || !degrees || !specialization || !status) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -677,7 +835,94 @@ exports.updateProfessorUser = async (req, res) => {
           console.error("Error updating professor:", profErr);
           return res.status(500).json({ message: "Error updating professor", error: profErr.message });
         }
-        // 4) Update the users table (for email, status, and optionally password)
+        
+        // 4) Update time availability if provided
+        if (time_availability) {
+          // First check if time availability record exists
+          const checkTimeAvailabilityQuery = `
+            SELECT availability_id FROM time_availability WHERE professor_id = ?
+          `;
+          
+          pool.query(checkTimeAvailabilityQuery, [ref_id], (checkErr, checkResults) => {
+            if (checkErr) {
+              console.error("Error checking time availability:", checkErr);
+              // Continue even if time availability check fails
+            } else {
+              if (checkResults.length > 0) {
+                // Update existing time availability record
+                const updateTimeAvailabilityQuery = `
+                  UPDATE time_availability
+                  SET 
+                    monday = ?,
+                    tuesday = ?,
+                    wednesday = ?,
+                    thursday = ?,
+                    friday = ?,
+                    saturday = ?,
+                    sunday = ?
+                  WHERE professor_id = ?
+                `;
+                
+                pool.query(
+                  updateTimeAvailabilityQuery,
+                  [
+                    time_availability.monday || null,
+                    time_availability.tuesday || null,
+                    time_availability.wednesday || null,
+                    time_availability.thursday || null,
+                    time_availability.friday || null,
+                    time_availability.saturday || null,
+                    time_availability.sunday || null,
+                    ref_id
+                  ],
+                  (updateTimeErr) => {
+                    if (updateTimeErr) {
+                      console.error("Error updating time availability:", updateTimeErr);
+                      // Continue even if time availability update fails
+                    }
+                  }
+                );
+              } else {
+                // Insert new time availability record
+                const insertTimeAvailabilityQuery = `
+                  INSERT INTO time_availability (
+                    professor_id,
+                    monday,
+                    tuesday,
+                    wednesday,
+                    thursday,
+                    friday,
+                    saturday,
+                    sunday
+                  )
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                `;
+                
+                pool.query(
+                  insertTimeAvailabilityQuery,
+                  [
+                    ref_id,
+                    time_availability.monday || null,
+                    time_availability.tuesday || null,
+                    time_availability.wednesday || null,
+                    time_availability.thursday || null,
+                    time_availability.friday || null,
+                    time_availability.saturday || null,
+                    time_availability.sunday || null
+                  ],
+                  (insertTimeErr) => {
+                    if (insertTimeErr) {
+                      console.error("Error inserting time availability:", insertTimeErr);
+                      // Continue even if time availability insertion fails
+                    }
+                  }
+                );
+              }
+            }
+          });
+        }
+        
+        // 5) Update the users table (for email, status, and optionally password)
         const updateUsersQuery = `
           UPDATE users
           SET 
@@ -697,7 +942,7 @@ exports.updateProfessorUser = async (req, res) => {
             console.error("Error updating professor user record:", userErr);
             return res.status(500).json({ message: "Error updating user record", error: userErr.message });
           }
-          // 5) If a new password was provided, send it via email
+          // 6) If a new password was provided, send it via email
           if (plainPassword) {
             try {
               // For professor, we assume first and last names can be derived from the professor table.
@@ -832,4 +1077,82 @@ exports.getCurrentUser = (req, res) => {
           res.json(results[0]); // Return user details
       }
   );
+};
+
+// GET /api/users/professor/:userId
+// Retrieves professor details including time availability
+exports.getProfessorById = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    // First get the ref_id from users table
+    const userQuery = "SELECT ref_id FROM users WHERE user_id = ? AND user_type = 'PROFESSOR'";
+    
+    pool.query(userQuery, [userId], (userErr, userResults) => {
+      if (userErr) {
+        return res.status(500).json({ message: "Error finding user", error: userErr.message });
+      }
+      
+      if (!userResults.length) {
+        return res.status(404).json({ message: "User not found." });
+      }
+      
+      const professorId = userResults[0].ref_id;
+      
+      // Now get the full professor details
+      const professorQuery = `
+        SELECT p.*, c.college_name, c.college_code 
+        FROM professor p
+        LEFT JOIN college c ON p.college_id = c.college_id
+        WHERE p.professor_id = ?
+      `;
+      
+      pool.query(professorQuery, [professorId], (profErr, profResults) => {
+        if (profErr) {
+          return res.status(500).json({ message: "Error finding professor details", error: profErr.message });
+        }
+        
+        if (!profResults.length) {
+          return res.status(404).json({ message: "Professor details not found." });
+        }
+        
+        // Get time availability data
+        const timeAvailabilityQuery = `
+          SELECT monday, tuesday, wednesday, thursday, friday, saturday, sunday
+          FROM time_availability
+          WHERE professor_id = ?
+        `;
+        
+        pool.query(timeAvailabilityQuery, [professorId], (timeErr, timeResults) => {
+          if (timeErr) {
+            console.error("Error fetching time availability:", timeErr);
+            // Continue even if time availability fetch fails
+            return res.json(profResults[0]);
+          }
+          
+          // Combine professor data with time availability
+          const professorData = profResults[0];
+          
+          if (timeResults.length > 0) {
+            professorData.time_availability = timeResults[0];
+          } else {
+            professorData.time_availability = {
+              monday: "",
+              tuesday: "",
+              wednesday: "",
+              thursday: "",
+              friday: "",
+              saturday: "",
+              sunday: ""
+            };
+          }
+          
+          return res.json(professorData);
+        });
+      });
+    });
+  } catch (err) {
+    console.error("Error in getProfessorById:", err);
+    return res.status(500).json({ message: "Internal server error", error: err.message });
+  }
 };

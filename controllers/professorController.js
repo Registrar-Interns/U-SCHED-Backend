@@ -4,39 +4,64 @@ const db = require("../db"); // ✅ Ensure correct import
 // ✅ Fix Backend Query to Ensure Full Name is Generated Properly
 exports.getAllProfessors = async (req, res) => {
     try {
-        const [results] = await db.promise().query(`
+        // First get all professors
+        const [professors] = await db.promise().query(`
             SELECT 
-                professor_id,
+                p.professor_id,
                 CASE 
-                    WHEN first_name IS NULL OR first_name = '' 
-                      OR last_name IS NULL OR last_name = '' THEN 'No Name Provided'
+                    WHEN p.first_name IS NULL OR p.first_name = '' 
+                      OR p.last_name IS NULL OR p.last_name = '' THEN 'No Name Provided'
                     ELSE CONCAT(
-                        last_name, ', ', first_name, 
-                        IFNULL(CONCAT(' ', LEFT(middle_name, 1), '.'), ''), 
-                        IFNULL(CONCAT(' ', extended_name), '')
+                        p.last_name, ', ', p.first_name, 
+                        IFNULL(CONCAT(' ', LEFT(p.middle_name, 1), '.'), ''), 
+                        IFNULL(CONCAT(' ', p.extended_name), '')
                     ) 
                 END AS full_name,
-                college_id as department,
-                faculty_type,
-                position,
-                time_availability,
-                bachelorsDegree,
-                mastersDegree,
-                doctorateDegree,
-                specialization,
-                status
-            FROM professor
-            ORDER BY last_name, first_name;
+                c.college_code as department,
+                p.faculty_type,
+                p.position,
+                p.bachelorsDegree,
+                p.mastersDegree,
+                p.doctorateDegree,
+                p.specialization,
+                p.status
+            FROM professor p
+            LEFT JOIN college c ON p.college_id = c.college_id
+            ORDER BY p.last_name, p.first_name;
         `);
-        console.log("API Response:", results); // ✅ Debug API Output
-        res.status(200).json(results);
+        
+        // For each professor, get their time availability
+        const professorsWithTimeAvailability = await Promise.all(
+            professors.map(async (professor) => {
+                const [timeAvailability] = await db.promise().query(
+                    `SELECT monday, tuesday, wednesday, thursday, friday, saturday, sunday 
+                     FROM time_availability 
+                     WHERE professor_id = ?`,
+                    [professor.professor_id]
+                );
+                
+                return {
+                    ...professor,
+                    time_availability: timeAvailability.length > 0 ? timeAvailability[0] : {
+                        monday: "",
+                        tuesday: "",
+                        wednesday: "",
+                        thursday: "",
+                        friday: "",
+                        saturday: "",
+                        sunday: ""
+                    }
+                };
+            })
+        );
+        
+        console.log("API Response:", professorsWithTimeAvailability); // ✅ Debug API Output
+        res.status(200).json(professorsWithTimeAvailability);
     } catch (err) {
         console.error("Database Error:", err);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
-
 
 // Get a single professor by ID
 exports.getProfessorById = async (req, res) => {
@@ -44,30 +69,51 @@ exports.getProfessorById = async (req, res) => {
         const { id } = req.params;
         const [results] = await db.promise().query(`
             SELECT 
-                professor_id,
-                CONCAT(
-                    COALESCE(last_name, ''), ', ', 
-                    COALESCE(first_name, ''), 
-                    CASE WHEN middle_name IS NOT NULL AND middle_name <> '' THEN CONCAT(' ', LEFT(middle_name, 1), '.') ELSE '' END, 
-                    CASE WHEN extended_name IS NOT NULL AND extended_name <> '' THEN CONCAT(' ', extended_name) ELSE '' END
-                ) AS full_name,
-                department,
-                faculty_type,
-                position,
-                time_availability,
-                bachelorsDegree,
-                mastersDegree,
-                doctorateDegree,
-                specialization,
-                status
-            FROM professor 
-            WHERE professor_id = ?
+                p.professor_id,
+                p.first_name,
+                p.middle_name,
+                p.last_name,
+                p.extended_name,
+                p.college_id,
+                c.college_code as department,
+                p.faculty_type,
+                p.position,
+                p.bachelorsDegree,
+                p.mastersDegree,
+                p.doctorateDegree,
+                p.specialization,
+                p.status
+            FROM professor p
+            LEFT JOIN college c ON p.college_id = c.college_id
+            WHERE p.professor_id = ?
         `, [id]);
 
         if (results.length === 0) {
             return res.status(404).json({ message: "Professor not found" });
         }
-        res.status(200).json(results[0]);
+        
+        // Get time availability
+        const [timeAvailability] = await db.promise().query(
+            `SELECT monday, tuesday, wednesday, thursday, friday, saturday, sunday 
+             FROM time_availability 
+             WHERE professor_id = ?`,
+            [id]
+        );
+        
+        const professorData = {
+            ...results[0],
+            time_availability: timeAvailability.length > 0 ? timeAvailability[0] : {
+                monday: "",
+                tuesday: "",
+                wednesday: "",
+                thursday: "",
+                friday: "",
+                saturday: "",
+                sunday: ""
+            }
+        };
+        
+        res.status(200).json(professorData);
     } catch (err) {
         console.error("Database Error:", err);
         res.status(500).json({ error: "Internal Server Error" });
@@ -78,30 +124,80 @@ exports.getProfessorById = async (req, res) => {
 exports.addProfessor = async (req, res) => {
     try {
         const {
-            first_name, middle_name, last_name, extended_name, department,
+            first_name, middle_name, last_name, extended_name, college_id,
             faculty_type, position, time_availability, bachelorsDegree,
-            mastersDegree, doctorateDegree, specialization, status
+            mastersDegree, doctorateDegree, specialization, status, email
         } = req.body;
 
-        if (!first_name || !last_name || !department || !faculty_type || !position || !status) {
+        if (!first_name || !last_name || !college_id || !faculty_type || !position || !status) {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-        const sql = `
-            INSERT INTO professor (
-                first_name, middle_name, last_name, extended_name, department, 
-                faculty_type, position, time_availability, bachelorsDegree, 
-                mastersDegree, doctorateDegree, specialization, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+        // Start a transaction
+        const connection = await db.promise().getConnection();
+        await connection.beginTransaction();
 
-        await db.promise().query(sql, [
-            first_name, middle_name || null, last_name, extended_name || null, department,
-            faculty_type, position, time_availability || null, bachelorsDegree || null,
-            mastersDegree || null, doctorateDegree || null, specialization || null, status
-        ]);
-
-        res.status(201).json({ message: "Professor added successfully!" });
+        try {
+            // 1. Insert into professor table
+            const [professorResult] = await connection.query(`
+                INSERT INTO professor (
+                    first_name, middle_name, last_name, extended_name, college_id, 
+                    faculty_type, position, bachelorsDegree, 
+                    mastersDegree, doctorateDegree, specialization, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                first_name, middle_name || null, last_name, extended_name || null, college_id,
+                faculty_type, position, bachelorsDegree || null,
+                mastersDegree || null, doctorateDegree || null, 
+                Array.isArray(specialization) ? specialization.join(", ") : specialization, 
+                status
+            ]);
+            
+            const professorId = professorResult.insertId;
+            
+            // 2. Insert time availability if provided
+            if (time_availability) {
+                await connection.query(`
+                    INSERT INTO time_availability (
+                        professor_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                `, [
+                    professorId,
+                    time_availability.monday || "",
+                    time_availability.tuesday || "",
+                    time_availability.wednesday || "",
+                    time_availability.thursday || "",
+                    time_availability.friday || "",
+                    time_availability.saturday || "",
+                    time_availability.sunday || ""
+                ]);
+            }
+            
+            // 3. If email is provided, create a user account
+            if (email) {
+                // Generate a random password (or implement your own logic)
+                const defaultPassword = Math.random().toString(36).slice(-8);
+                
+                await connection.query(`
+                    INSERT INTO users (
+                        ref_id, user_type, email, password, role, status
+                    ) VALUES (?, 'PROFESSOR', ?, ?, 'USER', ?)
+                `, [
+                    professorId, email, defaultPassword, status
+                ]);
+            }
+            
+            await connection.commit();
+            res.status(201).json({ 
+                message: "Professor added successfully!",
+                professor_id: professorId
+            });
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
+        }
     } catch (err) {
         console.error("Database Error:", err);
         res.status(500).json({ error: "Internal Server Error" });
@@ -113,30 +209,114 @@ exports.updateProfessor = async (req, res) => {
     try {
         const { id } = req.params;
         const {
-            first_name, middle_name, last_name, extended_name, department,
+            first_name, middle_name, last_name, extended_name, college_id,
             faculty_type, position, time_availability, bachelorsDegree,
-            mastersDegree, doctorateDegree, specialization, status
+            mastersDegree, doctorateDegree, specialization, status, email
         } = req.body;
 
-        const sql = `
-            UPDATE professor 
-            SET first_name=?, middle_name=?, last_name=?, extended_name=?, department=?, 
-                faculty_type=?, position=?, time_availability=?, bachelorsDegree=?, 
-                mastersDegree=?, doctorateDegree=?, specialization=?, status=? 
-            WHERE professor_id=?
-        `;
+        // Start a transaction
+        const connection = await db.promise().getConnection();
+        await connection.beginTransaction();
 
-        const [result] = await db.promise().query(sql, [
-            first_name, middle_name || null, last_name, extended_name || null, department,
-            faculty_type, position, time_availability || null, bachelorsDegree || null,
-            mastersDegree || null, doctorateDegree || null, specialization || null, status, id
-        ]);
+        try {
+            // 1. Update professor table
+            const [professorResult] = await connection.query(`
+                UPDATE professor 
+                SET first_name=?, middle_name=?, last_name=?, extended_name=?, college_id=?, 
+                    faculty_type=?, position=?, bachelorsDegree=?, 
+                    mastersDegree=?, doctorateDegree=?, specialization=?, status=? 
+                WHERE professor_id=?
+            `, [
+                first_name, middle_name || null, last_name, extended_name || null, college_id,
+                faculty_type, position, bachelorsDegree || null,
+                mastersDegree || null, doctorateDegree || null, 
+                Array.isArray(specialization) ? specialization.join(", ") : specialization, 
+                status, id
+            ]);
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "Professor not found" });
+            if (professorResult.affectedRows === 0) {
+                await connection.rollback();
+                return res.status(404).json({ message: "Professor not found" });
+            }
+            
+            // 2. Update time availability if provided
+            if (time_availability) {
+                // Check if time availability record exists
+                const [existingTimeAvailability] = await connection.query(
+                    `SELECT availability_id FROM time_availability WHERE professor_id = ?`,
+                    [id]
+                );
+                
+                if (existingTimeAvailability.length > 0) {
+                    // Update existing record
+                    await connection.query(`
+                        UPDATE time_availability
+                        SET monday=?, tuesday=?, wednesday=?, thursday=?, friday=?, saturday=?, sunday=?
+                        WHERE professor_id=?
+                    `, [
+                        time_availability.monday || "",
+                        time_availability.tuesday || "",
+                        time_availability.wednesday || "",
+                        time_availability.thursday || "",
+                        time_availability.friday || "",
+                        time_availability.saturday || "",
+                        time_availability.sunday || "",
+                        id
+                    ]);
+                } else {
+                    // Insert new record
+                    await connection.query(`
+                        INSERT INTO time_availability (
+                            professor_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [
+                        id,
+                        time_availability.monday || "",
+                        time_availability.tuesday || "",
+                        time_availability.wednesday || "",
+                        time_availability.thursday || "",
+                        time_availability.friday || "",
+                        time_availability.saturday || "",
+                        time_availability.sunday || ""
+                    ]);
+                }
+            }
+            
+            // 3. Update user account if email is provided
+            if (email) {
+                // Check if user account exists
+                const [existingUser] = await connection.query(
+                    `SELECT user_id FROM users WHERE ref_id = ? AND user_type = 'PROFESSOR'`,
+                    [id]
+                );
+                
+                if (existingUser.length > 0) {
+                    // Update existing user
+                    await connection.query(`
+                        UPDATE users
+                        SET email=?, status=?
+                        WHERE ref_id=? AND user_type='PROFESSOR'
+                    `, [email, status, id]);
+                } else {
+                    // Create new user
+                    const defaultPassword = Math.random().toString(36).slice(-8);
+                    
+                    await connection.query(`
+                        INSERT INTO users (
+                            ref_id, user_type, email, password, role, status
+                        ) VALUES (?, 'PROFESSOR', ?, ?, 'USER', ?)
+                    `, [id, email, defaultPassword, status]);
+                }
+            }
+            
+            await connection.commit();
+            res.status(200).json({ message: "Professor updated successfully!" });
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
         }
-
-        res.status(200).json({ message: "Professor updated successfully!" });
     } catch (err) {
         console.error("Database Error:", err);
         res.status(500).json({ error: "Internal Server Error" });
@@ -147,13 +327,34 @@ exports.updateProfessor = async (req, res) => {
 exports.deleteProfessor = async (req, res) => {
     try {
         const { id } = req.params;
-        const [result] = await db.promise().query("DELETE FROM professor WHERE professor_id = ?", [id]);
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "Professor not found" });
+        
+        // Start a transaction
+        const connection = await db.promise().getConnection();
+        await connection.beginTransaction();
+        
+        try {
+            // 1. Delete time availability
+            await connection.query("DELETE FROM time_availability WHERE professor_id = ?", [id]);
+            
+            // 2. Delete user account if exists
+            await connection.query("DELETE FROM users WHERE ref_id = ? AND user_type = 'PROFESSOR'", [id]);
+            
+            // 3. Delete professor
+            const [result] = await connection.query("DELETE FROM professor WHERE professor_id = ?", [id]);
+            
+            if (result.affectedRows === 0) {
+                await connection.rollback();
+                return res.status(404).json({ message: "Professor not found" });
+            }
+            
+            await connection.commit();
+            res.status(200).json({ message: "Professor deleted successfully!" });
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
         }
-
-        res.status(200).json({ message: "Professor deleted successfully!" });
     } catch (err) {
         console.error("Database Error:", err);
         res.status(500).json({ error: "Internal Server Error" });
@@ -165,6 +366,91 @@ exports.getAllSubjects = async (req, res) => {
     try {
         const [results] = await db.promise().query("SELECT id, subject_name AS name FROM curriculum_courses");
         res.status(200).json(results);
+    } catch (err) {
+        console.error("Database Error:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// Get professor time availability
+exports.getProfessorTimeAvailability = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const [results] = await db.promise().query(
+            `SELECT monday, tuesday, wednesday, thursday, friday, saturday, sunday 
+             FROM time_availability 
+             WHERE professor_id = ?`,
+            [id]
+        );
+        
+        if (results.length === 0) {
+            return res.status(200).json({
+                monday: "",
+                tuesday: "",
+                wednesday: "",
+                thursday: "",
+                friday: "",
+                saturday: "",
+                sunday: ""
+            });
+        }
+        
+        res.status(200).json(results[0]);
+    } catch (err) {
+        console.error("Database Error:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// Update professor time availability
+exports.updateProfessorTimeAvailability = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+        
+        // Check if time availability record exists
+        const [existingRecord] = await db.promise().query(
+            "SELECT availability_id FROM time_availability WHERE professor_id = ?",
+            [id]
+        );
+        
+        if (existingRecord.length > 0) {
+            // Update existing record
+            await db.promise().query(
+                `UPDATE time_availability 
+                 SET monday = ?, tuesday = ?, wednesday = ?, thursday = ?, friday = ?, saturday = ?, sunday = ? 
+                 WHERE professor_id = ?`,
+                [
+                    monday || "",
+                    tuesday || "",
+                    wednesday || "",
+                    thursday || "",
+                    friday || "",
+                    saturday || "",
+                    sunday || "",
+                    id
+                ]
+            );
+        } else {
+            // Insert new record
+            await db.promise().query(
+                `INSERT INTO time_availability (professor_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    id,
+                    monday || "",
+                    tuesday || "",
+                    wednesday || "",
+                    thursday || "",
+                    friday || "",
+                    saturday || "",
+                    sunday || ""
+                ]
+            );
+        }
+        
+        res.status(200).json({ message: "Time availability updated successfully" });
     } catch (err) {
         console.error("Database Error:", err);
         res.status(500).json({ error: "Internal Server Error" });

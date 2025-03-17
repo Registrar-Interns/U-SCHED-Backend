@@ -8,6 +8,12 @@ router.get("/:id", professorController.getProfessorById);
 router.post("/", professorController.addProfessor);
 router.put("/:id", professorController.updateProfessor);
 router.delete("/:id", professorController.deleteProfessor);
-router.get("/subjects", professorController.getAllSubjects); // ✅ Fetch subjects for specialization dropdown
+
+// Specialization routes
+router.get("/subjects/all", professorController.getAllSubjects);
+
+// Time availability routes
+router.get("/:id/time-availability", professorController.getProfessorTimeAvailability);
+router.put("/:id/time-availability", professorController.updateProfessorTimeAvailability);
 
 module.exports = router;

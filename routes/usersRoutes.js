@@ -17,6 +17,9 @@ router.put('/admin/:userId', usersController.updateAdminUser);
 // GET dean/chair by ID
 router.get('/deanchair/:userId', usersController.getDeanChairById);
 
+// GET professor by ID
+router.get('/professor/:userId', usersController.getProfessorById);
+
 // PUT update dean/chair (edit dean/chair fields)
 router.put('/deanchair/:userId', usersController.updateDeanChairUser);
 
