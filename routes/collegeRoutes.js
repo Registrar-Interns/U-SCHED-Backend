@@ -7,6 +7,7 @@ router.get('/:college_id/programs', collegeController.getProgramsByCollege);
 router.post('/', collegeController.addCollege);
 router.put('/:id', collegeController.updateCollege); //  Update College & Programs
 router.delete('/:id', collegeController.deleteCollege);
-router.delete('/programs/:id', collegeController.deleteProgram); //  Delete a Single Program
+router.delete('/programs/:id', collegeController.deleteProgram); //  Delete a Single Programv
+
 
 module.exports = router;

@@ -12,6 +12,8 @@ const passwordResetRoutes = require('./routes/passwordResetRoutes');
 const collegeRoutes = require('./routes/collegeRoutes');
 const roomAssignmentRoutes = require('./routes/roomAssignmentRoutes');
 const professorRoutes = require('./routes/professorRoutes');
+const sectionRoutes = require('./routes/sectionRoutes');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -49,6 +51,9 @@ app.use('/api/rooms', roomAssignmentRoutes);
 
 // Mount the professor routes
 app.use('/api/professors', professorRoutes);
+
+// Mount the section routes
+app.use('/api/sections', sectionRoutes);
 
 // Start the server
 app.listen(PORT, () => {

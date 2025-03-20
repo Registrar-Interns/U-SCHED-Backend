@@ -243,15 +243,12 @@ exports.addProfessor = async (req, res) => {
             
             // 3. If email is provided, create a user account
             if (email) {
-                // Generate a random password (or implement your own logic)
-                const defaultPassword = Math.random().toString(36).slice(-8);
-                
                 await connection.query(`
                     INSERT INTO users (
-                        ref_id, user_type, email, password, role, status
-                    ) VALUES (?, 'PROFESSOR', ?, ?, 'USER', ?)
+                        ref_id, user_type, email, role, status
+                    ) VALUES (?, 'PROFESSOR', ?, 'USER', ?)
                 `, [
-                    professorId, email, defaultPassword, status
+                    professorId, email, status
                 ]);
             }
             
@@ -429,14 +426,12 @@ exports.updateProfessor = async (req, res) => {
                         WHERE ref_id=? AND user_type='PROFESSOR'
                     `, [email, status, id]);
                 } else {
-                    // Create new user
-                    const defaultPassword = Math.random().toString(36).slice(-8);
-                    
+                    // Create new user without password
                     await connection.query(`
                         INSERT INTO users (
-                            ref_id, user_type, email, password, role, status
-                        ) VALUES (?, 'PROFESSOR', ?, ?, 'USER', ?)
-                    `, [id, email, defaultPassword, status]);
+                            ref_id, user_type, email, role, status
+                        ) VALUES (?, 'PROFESSOR', ?, 'USER', ?)
+                    `, [id, email, status]);
                 }
             }
             
